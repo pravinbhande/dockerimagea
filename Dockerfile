@@ -9,7 +9,8 @@ ENV TOMCAT_MAJOR=9 \
     CATALINA_HOME=/opt/tomcat
 
 # install required packages
-RUN apk -U upgrade --update && apk add curl && apk add ttf-dejavu
+RUN apk -U upgrade --update && apk add curl && apk add ttf-dejavu 
+RUN adduser tomcatadmin --disabled-password
 
 RUN mkdir -p /opt
 
@@ -23,6 +24,12 @@ RUN curl -jkSL -o /tmp/apache-tomcat.tar.gz http://archive.apache.org/dist/tomca
 RUN apk del curl &&  rm -rf /tmp/* /var/cache/apk/*
 
 COPY startup.sh /opt/startup.sh
+COPY server.xml /opt/apache-tomcat-$TOMCAT_VERSION/conf/server.xml
+RUN  mv /opt/apache-tomcat-$TOMCAT_VERSION/webapps/host-manager/manager.xml /opt/apache-tomcat-$TOMCAT_VERSION/webapps/host-manager/adm.xml
+
+RUN chown -R tomcatadmin /opt/apache-tomcat-$TOMCAT_VERSION/
+
+USER  tomcatadmin
 
 ENTRYPOINT /opt/startup.sh
 
